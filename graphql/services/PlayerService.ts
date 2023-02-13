@@ -1,41 +1,53 @@
 import {Player} from "../../types/Player";
-import CycleValScraper from "../../CycleValScraper";
-import initCycleTLS  from "cycletls";
+import {getPlayerData} from "../../CycleValScraper";
+import {CycleTLSClient} from "cycletls";
+import {ValData} from "../../types/TrnPageData";
 
-export interface PlayerService {
 
-    getPlayer(name: string, tag: string): Promise<Player>
+type map = {
+    [key: string]: Player
 }
 
+const cache: map = {}
 
-export class PlayerServiceImpl implements PlayerService {
+export interface PlayerService {
+    getPlayer(name: string, tag: string): Promise<Player>
+}
+export class PlayerServiceImpl implements PlayerService{
 
-    private valScraper: CycleValScraper | null = null
+     constructor(
+         private readonly client: CycleTLSClient
+     ) {
+         this.client = client
+     }
 
     async getPlayer(name: string, tag: string): Promise<Player> {
-        if (!this.valScraper) {
-            this.valScraper = new CycleValScraper(await initCycleTLS())
-        }
+         if (cache[name + tag]) {   return cache[name + tag] }
+         const pageData = await getPlayerData(name, tag, this.client)
+         const trnData: ValData = JSON.parse(pageData)
 
-        const pageData = await this.valScraper.getPlayer(name, tag) ?? "empty"
-
-        return {
-            name: name,
-            tagline: tag,
-            data: this.getJsonFromPage(pageData)
-        } as Player
-    }
-
-
-    private getJsonFromPage(body: string) {
-        const start = body.indexOf("\"segments\"")
-        const end = body.indexOf("\"availableSegments\"")
-
-        if (start == -1 || end == -1) {
-            return "unable to get data for player check tagline and name"
-        }
-
-        return `{${body.substring(start, end - 1)}}`
+         const data = trnData.segments.map(it => {
+            const kills = it.stats.kills.value
+            const actModeOrWeapon = it.metadata.name
+            return {
+                category: actModeOrWeapon,
+                kills: kills
+            }
+        })
+        console.log(data)
+        const player = {
+                 name: name,
+                 tagline: tag,
+                 ghost: {
+                     name: 'Ghost',
+                     weaponType: 'pistol',
+                     stats: {
+                         kills: data.filter(it => it.category == 'Ghost')[0].kills
+                     }
+                 }
+             } as Player
+        cache[name + tag] = player
+        return player
     }
 }
 
