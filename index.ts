@@ -4,7 +4,7 @@ import {ApolloServer} from "apollo-server-express";
 import {buildSchema} from "type-graphql";
 import {PlayerResolver} from "./graphql/resolvers/PlayerResolver";
 import initCycleTLS  from "cycletls";
-import {PlayerService, PlayerServiceImpl} from "./graphql/services/PlayerService";
+import {PlayerRepo, PlayerRepoImpl} from "./graphql/data/PlayerRepo";
 
 
 const express = require('express')
@@ -15,13 +15,13 @@ const port = 6969
 export type MyContext = {
     req:  Request
     res: Response;
-
-    playerService: PlayerService
+    playerRepo: PlayerRepo
 };
+
 async function main() {
 
     const client = await initCycleTLS()
-    const playerService =  new PlayerServiceImpl(client)
+    const playerRepo =  new PlayerRepoImpl(client)
 
     const schema = await buildSchema({
         resolvers: [PlayerResolver],
@@ -33,7 +33,7 @@ async function main() {
             context: ({req, res}) => ({
                 req,
                 res,
-                playerService
+                playerRepo
             })
         });
     await server.start()

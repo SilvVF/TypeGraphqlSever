@@ -1,23 +1,28 @@
 import {Field, ID, ObjectType} from "type-graphql";
 
 @ObjectType()
-export class Stats {
+export class WeaponStats {
 
     @Field({defaultValue: 0})
     kills: number;
+
+    @Field()
+    hsPct: number;
 }
 
+
+
 @ObjectType()
-export class Ghost {
+export class Weapon {
 
-    @Field({defaultValue: 'pistol'})
-    weaponType: string = 'pistol';
+    @Field()
+    name: string
 
-    @Field({defaultValue: 'Ghost'})
-    name: string = 'Ghost'
+    @Field()
+    weaponType: string
 
-    @Field(() => Stats)
-    stats: Stats
+    @Field()
+    stats: WeaponStats
 }
 
 
@@ -28,9 +33,9 @@ export class Player  {
     name: string;
 
     @Field()
-    tagline: string;
+    tag: string;
 
-    @Field(  () => Ghost, {nullable: true})
-    ghost: Ghost
+    @Field(  () => [Weapon], {nullable: true})
+    weapons: Weapon[]
 }
 
