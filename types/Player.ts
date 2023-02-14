@@ -25,6 +25,15 @@ export class Weapon {
     stats: WeaponStats
 }
 
+@ObjectType()
+export class MapData {
+
+    @Field()
+    name: string
+
+    @Field()
+    winPct: number
+}
 
 @ObjectType()
 export class Player  {
@@ -37,5 +46,8 @@ export class Player  {
 
     @Field(  () => [Weapon], {nullable: true})
     weapons: Weapon[]
+
+    @Field(() => [MapData])
+    maps: MapData[]
 }
 

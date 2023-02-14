@@ -1,4 +1,4 @@
-import {Player, Weapon, WeaponStats} from "../../types/Player";
+import {MapData, Player, Weapon, WeaponStats} from "../../types/Player";
 import {getPlayerData} from "../../CycleValScraper";
 import {CycleTLSClient} from "cycletls";
 import {ValData} from "../../types/TrnPageData";
@@ -35,23 +35,18 @@ export class PlayerRepoImpl implements PlayerRepo {
     }
 
     async savePlayer(name: string, tag: string): Promise<Player> {
-        const pageData = await getPlayerData(name, tag, this.client)
-        const trnData: ValData = JSON.parse(pageData)
 
-        // const data = trnData.segments.map(it => {
-        //     const kills = it.stats.kills.value
-        //     const actModeOrWeapon = it.metadata.name
-        //     return {
-        //         category: actModeOrWeapon,
-        //         kills: kills
-        //     }
-        // })
+        const trnData: ValData = JSON.parse(await getPlayerData(name, tag, this.client))
+        console.log(trnData.segments.map(it => it.metadata.name))
         const weapons = filterWeaponData(trnData)
+        const maps = filterMapData(trnData)
+
 
         const player: Player= {
             name: name,
             tag: tag,
-            weapons: weapons
+            weapons: weapons,
+            maps: maps
         }
         cache[name + tag] = {
             player: player,
@@ -67,6 +62,34 @@ const weaponList = [
     'Ghost', 'Marshal', 'Judge', 'Classic', 'Ares',
     'Vandal', 'Phantom', 'Bucky',
 ]
+const mapList = [
+    'Lotus',
+    'Split',
+    'Haven',
+    'Fracture',
+    'Ascent',
+    'Icebox',
+    'Pearl'
+]
+
+function filterMapData(valData: ValData): MapData[] {
+    return valData.segments
+        .filter(it => {
+            for (const name of mapList) {
+                if (it.metadata.name == name) {
+                    return true
+                }
+            }
+            return false
+        })
+        .map(item => {
+            const mapData: MapData = {
+                name: item.metadata.name,
+                winPct: item.stats.matchesWinPct.value,
+            }
+            return mapData
+        })
+}
 
 function filterWeaponData(valData: ValData): Weapon[] {
     return valData.segments
