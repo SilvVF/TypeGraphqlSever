@@ -44,6 +44,12 @@ export class Player  {
     @Field()
     tag: string;
 
+    @Field()
+    rank: string
+
+    @Field()
+    rankIconUrl: string
+
     @Field(  () => [Weapon], {nullable: true})
     weapons: Weapon[]
 

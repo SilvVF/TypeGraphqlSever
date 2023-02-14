@@ -39,11 +39,14 @@ export class PlayerRepoImpl implements PlayerRepo {
         console.log(trnData.segments.map(it => it.metadata.name))
         const weapons = filterWeaponData(trnData)
         const maps = filterMapData(trnData)
-
+        const rank = trnData.segments[0].stats.rank.metadata.tierName
+        const rankIconUrl = trnData.segments[0].stats.rank.metadata.iconUrl
 
         const player: Player= {
             name: name,
             tag: tag,
+            rank: rank,
+            rankIconUrl: rankIconUrl,
             weapons: weapons,
             maps: maps
         }
