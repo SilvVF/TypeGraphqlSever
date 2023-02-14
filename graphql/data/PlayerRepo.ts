@@ -2,7 +2,6 @@ import {MapData, Player, Weapon, WeaponStats} from "../../types/Player";
 import {getPlayerData} from "../../CycleValScraper";
 import {CycleTLSClient} from "cycletls";
 import {ValData} from "../../types/TrnPageData";
-import {it} from "node:test";
 
 
 type map = {
