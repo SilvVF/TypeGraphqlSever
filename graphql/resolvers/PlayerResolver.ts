@@ -1,6 +1,9 @@
 import {Arg, Ctx, Mutation, Query, Resolver} from "type-graphql";
 import {Player} from '../../types/Player'
 import {MyContext} from "../../index";
+import {randomUUID} from "crypto";
+
+
 
 @Resolver(Player)
 export class PlayerResolver {
@@ -19,8 +22,11 @@ export class PlayerResolver {
     async savePlayer(
         @Arg("name") name: string,
         @Arg("tag") tag: string,
-        @Ctx() { playerRepo }: MyContext
+        @Ctx() { playerRepo, session }: MyContext
     ) {
+
+        session.userId = randomUUID()
+
         return await playerRepo.savePlayer(name, tag)
     }
 }

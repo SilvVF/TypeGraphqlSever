@@ -2,6 +2,7 @@ import {MapData, Player, Weapon, WeaponStats} from "../../types/Player";
 import {getPlayerData} from "../../CycleValScraper";
 import {CycleTLSClient} from "cycletls";
 import {ValData} from "../../types/TrnPageData";
+import {mapList, oneHourAsMillis, weaponList} from "./player-constants";
 
 
 type map = {
@@ -12,12 +13,13 @@ type map = {
 }
 
 const cache: map = {}
-const oneHourAsMillis = 3600000
+
 
 export interface PlayerRepo {
     getPlayer(name: string, tag: string): Promise<Player>
     savePlayer(name: string, tag: string): Promise<Player>
 }
+
 export class PlayerRepoImpl implements PlayerRepo {
 
     constructor(
@@ -39,14 +41,13 @@ export class PlayerRepoImpl implements PlayerRepo {
         console.log(trnData.segments.map(it => it.metadata.name))
         const weapons = filterWeaponData(trnData)
         const maps = filterMapData(trnData)
-        const rank = trnData.segments[0].stats.rank.metadata.tierName
-        const rankIconUrl = trnData.segments[0].stats.rank.metadata.iconUrl
+        const { tierName, iconUrl } = trnData.segments[0].stats.rank.metadata
 
         const player: Player= {
             name: name,
             tag: tag,
-            rank: rank,
-            rankIconUrl: rankIconUrl,
+            rank: tierName,
+            rankIconUrl: iconUrl,
             weapons: weapons,
             maps: maps
         }
@@ -58,27 +59,12 @@ export class PlayerRepoImpl implements PlayerRepo {
     }
 }
 
-const weaponList = [
-    'Spectre', 'Odin', 'Operator', 'Guardian', 'Bulldog',
-    'Sheriff', 'Stinger', 'Shorty', 'Melee', 'Frenzy',
-    'Ghost', 'Marshal', 'Judge', 'Classic', 'Ares',
-    'Vandal', 'Phantom', 'Bucky',
-]
-const mapList = [
-    'Lotus',
-    'Split',
-    'Haven',
-    'Fracture',
-    'Ascent',
-    'Icebox',
-    'Pearl'
-]
 
 function filterMapData(valData: ValData): MapData[] {
     return valData.segments
         .filter(it => {
             for (const name of mapList) {
-                if (it.metadata.name == name) {
+                if (it.metadata.name.toLowerCase() == name.toLowerCase()) {
                     return true
                 }
             }
@@ -97,7 +83,7 @@ function filterWeaponData(valData: ValData): Weapon[] {
     return valData.segments
         .filter(it => {
             for (const name of weaponList) {
-                if (it.metadata.name == name) {
+                if (it.metadata.name.toLowerCase() == name.toLowerCase()) {
                     return true
                 }
             }
